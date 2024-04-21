@@ -6,28 +6,22 @@ import { useRouter } from "next/navigation";
 
 import Profile from "@components/Profile";
 
-const UserProfile = () => {
+const MyProfile = () => {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const [userPosts, setUserPosts] = useState([]);
-  const [userName, setUserName] = useState("");
+  const [myPosts, setMyPosts] = useState([]);
 
   useEffect(() => {
-    const { id, name } = router.query;
-
     const fetchPosts = async () => {
-      const response = await fetch(`/api/users/${id}/posts`);
+      const response = await fetch(`/api/users/${session?.user.id}/posts`);
       const data = await response.json();
 
-      setUserPosts(data);
+      setMyPosts(data);
     };
 
-    if (id && name) {
-      setUserName(name);
-      fetchPosts();
-    }
-  }, [router.query]);
+    if (session?.user.id) fetchPosts();
+  }, [session?.user.id]);
 
   const handleEdit = (post) => {
     router.push(`/update-prompt?id=${post._id}`);
@@ -44,9 +38,9 @@ const UserProfile = () => {
           method: "DELETE",
         });
 
-        const filteredPosts = userPosts.filter((item) => item._id !== post._id);
+        const filteredPosts = myPosts.filter((item) => item._id !== post._id);
 
-        setUserPosts(filteredPosts);
+        setMyPosts(filteredPosts);
       } catch (error) {
         console.log(error);
       }
@@ -55,17 +49,13 @@ const UserProfile = () => {
 
   return (
     <Profile
-      name={userName ? `${userName}'s` : "My"}
-      desc={
-        userName
-          ? `Welcome to ${userName}'s profile page`
-          : "Welcome to your personalized profile page. Share your exceptional prompts and inspire others with the power of your imagination"
-      }
-      data={userPosts}
+      name="My"
+      desc="Welcome to your personalized profile page. Share your exceptional prompts and inspire others with the power of your imagination"
+      data={myPosts}
       handleEdit={handleEdit}
       handleDelete={handleDelete}
     />
   );
 };
 
-export default UserProfile;
+export default MyProfile;
